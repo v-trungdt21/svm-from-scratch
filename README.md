@@ -16,6 +16,13 @@ $ pip install -r requirements.txt
 $ pre-commit install
 ```
 
+## Currently used hooks:
+- `isort`: Sort imports.
+- `black`: General python formatter.
+- `flake8`: Check PEP8 convention.
+- `pre-commit`: Run those hooks before commits.
+
+
 # Work Convention ✨
 - Code convention: Follow PEP8 convention (include docstrings for functions).
 - Update `__init__.py` when you add new modules.
