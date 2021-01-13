@@ -8,7 +8,7 @@ There are 5 tasks in total:
 - **Task 4**: Training using self-implementeed library ([progress](docs/task4.md)).
 - **Task 5**: Visualization + Comparison with sklearn ([progress](docs/task5.md)).
 
-# Installation guide
+# Installation guide 🔥
 ```
 $ git clone https://github.com/trungdt21/svm-from-scratch
 $ cd svm-from-scratch
@@ -16,14 +16,17 @@ $ pip install -r requirements.txt
 $ pre-commit install
 ```
 
-# Work Convention
+# Work Convention ✨
 - Code convention: Follow PEP8 convention (include docstrings for functions).
 - Update `__init__.py` when you add new modules.
-- Use pre-commit so that the code would not be messy when merge between commits.\
+- Use pre-commit so that the code would not be messy when merge between commits:
+  - Usually, you can just `git commit` and `pre-commit` will run itself.
+  - If you want to run it manually, use `pre-commit run --all-files` to run all files, `pre-commit run <hook_id>` to run a specific hook.
+- Remember to put understandable commit descriptions.
 - Update `taskX.md` of your task (documentation, progress, API documentation) usually so that other can follow it.
 - Write tests if you can.
 
-# Contributors
+# Contributors 🥺
 - Phan Hoang Viet
 - Tran Duc Nam
 - Nguyen Hoang Tuan Duy

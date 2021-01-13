@@ -1,4 +1,4 @@
-from core.svm import SVM
+from core import SVM
 
 if __name__ == "__main__":
     svm = SVM()
