@@ -13,6 +13,7 @@ There are 5 tasks in total:
 $ git clone https://github.com/trungdt21/svm-from-scratch
 $ cd svm-from-scratch
 $ pip install -r requirements.txt
+$ pip install -e .
 $ pre-commit install
 ```
 

@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name="svmpure",
+    name="svm",
     version="1.0",
     description="A self-implement svm using numpy",
     author="OptimizationTeam",
-    packages=["svmpure"],  # same as name
+    packages=["svm"],  # same as name
 )
