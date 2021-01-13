@@ -28,6 +28,10 @@ class SVM_Kernel(object):
         self.gamma = float(gamma) # Value in poly, sigmoid, rbf kernels
         self.x = x
         self.z = z
+        self.kernel_function = {"linear":self.linear,
+                                "poly":self.polynomial,
+			                    "rbf":self.rbf,
+                                "tanh":self.tanh}
 
     def linear(self, x, z):
         """Calculate the dot product btw two vectors.
