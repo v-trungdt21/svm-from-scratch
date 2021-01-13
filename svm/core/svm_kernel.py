@@ -6,7 +6,7 @@ import numpy as np
 
 logging.basicConfig(level=logging.DEBUG)
 
-class SVM_Kernel(object):
+class SVMKernel():
     """Defination of svm kernel. Calculate the ouput for K(x, z).
     With x, z are input of kernel function. Four kernels used in
     this class:
@@ -16,8 +16,8 @@ class SVM_Kernel(object):
     4. sigmoid
     4. Updating ...
     """
-    def __init__(self, kernel_name, coef=1, degree=3,
-                 gamma=5, x, z):
+    def __init__(self, kernel_name='linear', coef=1, degree=3,
+                 gamma=5):
         default_kernels = ['linear', 'poly', 'rbf', 'sigmoid']
         if kernel_name not in default_kernels:
             raise "SVM currently support ['linear', 'poly', 'rbf', \
@@ -26,12 +26,10 @@ class SVM_Kernel(object):
         self.coef = coef # Value in poly, sigmoid kernels
         self.degree = float(degree) # Value in poly kernel
         self.gamma = float(gamma) # Value in poly, sigmoid, rbf kernels
-        self.x = x
-        self.z = z
         self.kernel_function = {"linear":self.linear,
                                 "poly":self.polynomial,
 			                    "rbf":self.rbf,
-                                "tanh":self.tanh}
+                                "tanh":self.sigmoid}
 
     def linear(self, x, z):
         """Calculate the dot product btw two vectors.
