@@ -69,7 +69,7 @@ def get_kernel_function(
 
     if kernel not in default_kernels:
         return BaseException(
-            "SVM currently support ['linear', 'poly', \
+            "SVM currently support ['linear'1, 'poly', \
             'rbf','sigmoid'] kernels, please choose again!"
         )
     elif kernel == "linear":
