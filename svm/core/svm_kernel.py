@@ -4,65 +4,73 @@ import logging
 
 import numpy as np
 
+from svm.utils import exceptions
+
 logging.basicConfig(level=logging.DEBUG)
 
+def cal_kernel_linear(x, z):
+    """Calculate the dot product btw two vectors.
+    x, z: input arrays
+    Return: <x, z>
+    """
+    return np.dot(x.T, z)
 
-class SVMKernel:
-    """Defination of svm kernel. Calculate the ouput for K(x, z).
-    With x, z are input of kernel function. Four kernels used in
-    this class:
-    1. linear
-    2. polynomial
-    3. rbf
-    4. sigmoid
-    4. Updating ...
+def cal_kernel_polynomial(x, z, coef, gamma, degree):
+    """Calculate the poly value btw two vectors.
+    x, z: input arrays
+    return: poly(x, z)
+    """
+    return (coef + gamma * np.dot(x.T, z)) ** degree
+
+def cal_kernel_rbf(x, z, gamma):
+    """Calculate the rbf product btw two vectors.
+    x, z: input arrays
+    return: rbf(x, z)
+    """
+    if gamma < 0:
+        raise "Gamma value must greater than zero."
+
+    return np.exp(
+        -1.0 * gamma * np.dot(np.subtract(x, z).T, np.subtract(x, z))
+    )
+
+def cal_kernel_sigmoid(x, z, gamma, coef):
+    """Calculate the sigmoid value btw two vectors.
+    x, z: input arrays
+    return: sigmoid(x, z)
+    """
+    return np.tanh(gamma * np.dot(x.T, z) + coef)
+
+def kernel_function(kernel='linear', degree=2, gamma=5,
+                    coef=1, x=None, z=None):
+    """Calculate the sigmoid value btw two vectors.
+    Input:
+      x, z: input arrays
+      degree: Value in poly kernel
+      gamma: Value in poly, sigmoid, rbf kernels
+      coef: Value in poly, sigmoid kernels
+
+    Return: cal_kernel_(x, z)
     """
 
-    def __init__(self, kernel_name="linear", coef=1, degree=3, gamma=5):
-        default_kernels = ["linear", "poly", "rbf", "sigmoid"]
-        if kernel_name not in default_kernels:
-            raise "SVM currently support ['linear', 'poly', 'rbf', \
-                  'sigmoid'] kernels, please choose again!"
-        self.kernel_name = kernel_name
-        self.coef = coef  # Value in poly, sigmoid kernels
-        self.degree = float(degree)  # Value in poly kernel
-        self.gamma = float(gamma)  # Value in poly, sigmoid, rbf kernels
-        self.kernel_function = {
-            "linear": self.linear,
-            "poly": self.polynomial,
-            "rbf": self.rbf,
-            "tanh": self.sigmoid,
-        }
+    degree = float(degree)
+    gamma = float(gamma)
 
-    def linear(self, x, z):
-        """Calculate the dot product btw two vectors.
-        x, z: input arrays
-        Return: <x, z>
-        """
-        return np.dot(x.T, z)
+    default_kernels = ["linear", "poly", "rbf", "sigmoid"]
 
-    def polynomial(self, x, z):
-        """Calculate the poly value btw two vectors.
-        x, z: input arrays
-        return: poly(x, z)
-        """
-        return (self.coef + self.gamma * np.dot(x.T, z)) ** self.degree
+    if kernel not in default_kernels:
+        exception = exceptions.BaseException(
+            message="SVM currently support ['linear', 'poly', 'rbf', \
+                    'sigmoid'] kernels, please choose again!")
+        return exception.__str__
 
-    def rbf(self, x, z):
-        """Calculate the rbf product btw two vectors.
-        x, z: input arrays
-        return: rbf(x, z)
-        """
-        if self.gamma < 0:
-            raise "Gamma value must greater than zero."
+    if kernel == 'linear':
+        return cal_kernel_linear(x, z)
+    elif kernel == 'poly':
+        return cal_kernel_polynomial(x, z, coef, gamma, degree)
+    elif kernel == 'rbf':
+        return cal_kernel_rbf(x, z, gamma)
+    elif kernel == 'sigmoid':
+        return cal_kernel_sigmoid(x, z, gamma, coef)
 
-        return np.exp(
-            -1.0 * self.gamma * np.dot(np.subtract(x, z).T, np.subtract(x, z))
-        )
-
-    def sigmoid(self, x, z):
-        """Calculate the sigmoid value btw two vectors.
-        x, z: input arrays
-        return: sigmoid(x, z)
-        """
-        return np.tanh(self.gamma * np.dot(x.T, z) + self.coef)
+    return None
