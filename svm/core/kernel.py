@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 
-from svm.utils import exceptions
+from svm.utils import BaseException
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -13,6 +13,7 @@ def cal_kernel_linear(x, z):
     x, z: input arrays
     Return: <x, z>
     """
+     # TODO: Check x.T: make sure input x can be transpose
     return np.dot(x.T, z)
 
 def cal_kernel_polynomial(x, z, coef, gamma, degree):
@@ -20,6 +21,7 @@ def cal_kernel_polynomial(x, z, coef, gamma, degree):
     x, z: input arrays
     return: poly(x, z)
     """
+     # TODO: Check x.T: make sure input x can be transpose
     return (coef + gamma * np.dot(x.T, z)) ** degree
 
 def cal_kernel_rbf(x, z, gamma):
@@ -27,6 +29,7 @@ def cal_kernel_rbf(x, z, gamma):
     x, z: input arrays
     return: rbf(x, z)
     """
+     # TODO: Check x.T: make sure input x can be transpose
     if gamma < 0:
         raise "Gamma value must greater than zero."
 
@@ -39,6 +42,7 @@ def cal_kernel_sigmoid(x, z, gamma, coef):
     x, z: input arrays
     return: sigmoid(x, z)
     """
+    # TODO: Check x.T: make sure input x can be transpose
     return np.tanh(gamma * np.dot(x.T, z) + coef)
 
 def kernel_function(kernel='linear', degree=2, gamma=5,
@@ -59,10 +63,9 @@ def kernel_function(kernel='linear', degree=2, gamma=5,
     default_kernels = ["linear", "poly", "rbf", "sigmoid"]
 
     if kernel not in default_kernels:
-        exception = exceptions.BaseException(
-            message="SVM currently support ['linear', 'poly', 'rbf', \
-                    'sigmoid'] kernels, please choose again!")
-        return exception.__str__
+        return BaseException(
+            "SVM currently support ['linear', 'poly', \
+            'rbf','sigmoid'] kernels, please choose again!")
 
     if kernel == 'linear':
         return cal_kernel_linear(x, z)
