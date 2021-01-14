@@ -48,9 +48,7 @@ def sigmoid_kernel(x, z, gamma, coef):
     return np.tanh(gamma * np.dot(x, z) + coef)
 
 
-def get_kernel_function(
-    kernel="linear", degree=2.0, gamma=5.0, coef=1.0, x=None, z=None
-):
+def get_kernel_function(kernel="linear", degree=2.0, gamma=5.0, coef=1.0):
     """Calculate the sigmoid value btw two vectors.
     Input:
       x, z: input arrays
