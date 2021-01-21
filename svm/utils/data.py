@@ -17,9 +17,10 @@ def generate_linear_separable_dataset(
 
 
 def generate_nonlinear_separable_dataset(
-    n_features=2, n_classes=2, mean=[0.0, 0.0], seed=50
+    n_samples=200, n_features=2, n_classes=2, mean=[0.0, 0.0], seed=50
 ):
     X, Y = make_gaussian_quantiles(
+        n_samples=n_samples,
         n_features=n_features,
         n_classes=n_classes,
         mean=mean,
@@ -29,5 +30,5 @@ def generate_nonlinear_separable_dataset(
 
 
 def plot_2d_dataset(X, Y):
-    plt.scatter(X[:, 0], Y[:, 1], marker="o", c=Y, s=25, edgecolor="k")
+    plt.scatter(X[:, 0], X[:, 1], marker="o", c=Y, s=25, edgecolor="k")
     plt.show()
