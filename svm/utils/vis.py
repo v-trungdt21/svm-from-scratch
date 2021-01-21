@@ -65,8 +65,8 @@ def make_meshgrid(x_min=0.0, x_max=10.0, y_min=0.0, y_max=10.0, h=0.02):
     Returns:
         xx, yy (np.array, np.array): meshgrid
     """
-    x_min, x_max = 0.0 - 1, 10.0 + 1
-    y_min, y_max = 0.0 - 1, 10.0 + 1
+    x_min, x_max = x_min - 1, x_max + 1
+    y_min, y_max = y_min - 1, y_max + 1
     xx, yy = np.meshgrid(
         np.arange(x_min, x_max, h), np.arange(y_min, y_max, h)
     )
@@ -151,9 +151,26 @@ def plot_svc_decision_function(model, ax, plot_support=True):
     ax.set_ylim(ylim)
 
 
+def infer(fig, ax, X, Y, plot_param):
+    model = SVC(kernel=kernel_list[plot_param.kernel_idx], C=1e10)
+    print("Fitting....")
+    model.fit(X, Y)
+    print("Plotting....")
+    X = np.array(X)
+    Y = np.array(Y)
+    X0, X1 = X[:, 0], X[:, 1]
+    xx, yy = make_meshgrid(X0, X1)
+
+    plot_contours(ax, model, xx, yy, cmap=plt.cm.coolwarm, alpha=0.8)
+    plot_svc_decision_function(model, ax)
+    fig.canvas.draw()
+
+
 def onclick(event, fig, ax, X, Y, plot_param):
     if not plot_param.allow_press:
         print("You can't add more data points. Press R to restart.")
+        return
+    if event.xdata is None and event.ydata is None:
         return
 
     point_opt = "bo"
@@ -168,7 +185,6 @@ def onclick(event, fig, ax, X, Y, plot_param):
 
 
 def onpress(event, fig, ax, X, Y, plot_param):
-    print(event.key)
     key = event.key
     pressed_key = key_dict.get(key)
     if pressed_key == "debug":
@@ -227,19 +243,7 @@ def onpress(event, fig, ax, X, Y, plot_param):
             return
         plot_param.allow_press = False
         plot_param.allow_infer = False
-
-        model = SVC(kernel=kernel_list[plot_param.kernel_idx], C=1e10)
-        print("Fitting....")
-        model.fit(X, Y)
-        print("Plotting....")
-        X = np.array(X)
-        Y = np.array(Y)
-        X0, X1 = X[:, 0], X[:, 1]
-        xx, yy = make_meshgrid(X0, X1)
-
-        plot_contours(ax, model, xx, yy, cmap=plt.cm.coolwarm, alpha=0.8)
-        plot_svc_decision_function(model, ax)
-        fig.canvas.draw()
+        infer(fig, ax, X, Y, plot_param)
     elif pressed_key == "toggle_kernels":
         plot_param.kernel_idx = (plot_param.kernel_idx + 1) % len(kernel_list)
         kernel = kernel_list[plot_param.kernel_idx]
