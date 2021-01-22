@@ -2,6 +2,7 @@ from functools import partial
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.svm import SVC
 
 from svm.utils import (
     generate_linear_separable_dataset,
@@ -39,10 +40,10 @@ def onclick(event, fig, ax, X, Y, plot_param):
         return
 
     point_opt = "bo"
-    y = 1
+    y = -1
     if button_dict.get(event.button) == "right_click":
         point_opt = "rx"
-        y = -1
+        y = 1
     X.append([event.xdata, event.ydata])
     Y.append(y)
     plt.plot(event.xdata, event.ydata, point_opt)
@@ -92,7 +93,8 @@ def onpress(event, fig, ax, X, Y, plot_param):
         plot_param.allow_infer = False
         plot_param.showed_tooltip = False
 
-        infer(fig, ax, X, Y, plot_param)
+        model = SVC(kernel=plot_param.get_kernel(), C=1e10)
+        infer(fig, ax, model, X, Y, plot_param)
     elif pressed_key == "toggle_kernels":
         plot_param.kernel_idx = (plot_param.kernel_idx + 1) % len(
             plot_param.kernel_list

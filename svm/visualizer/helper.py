@@ -2,7 +2,6 @@ from functools import partial
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.svm import SVC
 
 
 class Param:
@@ -154,13 +153,12 @@ def plot_svc_decision_function(model, ax, plot_support=True):
     ax.set_ylim(ylim)
 
 
-def infer(fig, ax, X, Y, plot_param):
-    model = SVC(kernel=plot_param.get_kernel(), C=1e10)
+def infer(fig, ax, clf, X, Y, plot_param):
     print("Fitting....")
-    model.fit(X, Y)
+    clf.fit(X, Y)
     print("Plotting....")
     xx, yy = make_meshgrid()
 
-    plot_contours(ax, model, xx, yy, cmap=plt.cm.coolwarm, alpha=0.8)
-    plot_svc_decision_function(model, ax)
+    plot_contours(ax, clf, xx, yy, cmap=plt.cm.coolwarm, alpha=0.8)
+    plot_svc_decision_function(clf, ax)
     fig.canvas.draw()
