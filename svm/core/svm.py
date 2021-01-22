@@ -24,6 +24,9 @@ class SVM:
             self.C = float(self.C)
 
     def fit(self, data):
+        # gamma_value = self.cal_gamma_value(
+        #     data.X, self.gamma
+        # )  # TODO: type of input data must be np.
         pass
 
     def predict(self, features):
@@ -47,3 +50,20 @@ class SVM:
             # for i in range(bs):
             #     s = 0
             return None
+
+    def cal_gamma_value(self, x, gamma="scale"):
+        """Calculate the gamma value of input.
+        Args
+        ----------
+            x: input arrays
+
+        Return
+        ----------
+            gamma_value(x)
+        """
+        if gamma == "scale":
+            return 1 / (x.shape[0] * np.var(x))
+        elif gamma == "auto":
+            return 1 / x.shape[0]
+        else:
+            return float(gamma)
