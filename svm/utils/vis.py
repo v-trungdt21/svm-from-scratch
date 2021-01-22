@@ -19,6 +19,7 @@ key_dict = {
     "3": "create_nonlinear_separable",
     " ": "infer",
     "f2": "toggle_kernels",
+    "/": "show_help",
 }
 kernel_list = ["linear", "poly", "rbf", "sigmoid"]
 
@@ -33,6 +34,18 @@ class Param:
         self.kernel_idx = 0
         self.allow_press = True
         self.allow_infer = True
+        self.showed_tooltip = False
+
+
+def plot_scatter(ax, X1, X2, Y):
+    ax.scatter(
+        X1,
+        X2,
+        marker="o",
+        c=Y,
+        s=25,
+        edgecolor="k",
+    )
 
 
 def plot_contours(ax, clf, xx, yy, **params):
@@ -52,21 +65,32 @@ def plot_contours(ax, clf, xx, yy, **params):
     ax.contourf(xx, yy, Z, **params)
 
 
-def make_meshgrid(x_min=0.0, x_max=10.0, y_min=0.0, y_max=10.0, h=0.02):
+def generate_data_then_plot(fig, ax, X, Y, plot_param, generate_func):
+    reset(fig, ax, X, Y)
+    plot_param.allow_press = False
+    plot_param.allow_infer = True
+    plot_param.showed_tooltip = False
+
+    a, b = generate_func()
+    X.extend(a)
+    Y.extend(b)
+    plot_scatter(ax, a[:, 0], a[:, 1], b)
+    fig.canvas.draw()
+
+
+def make_meshgrid(xmin=0.0, xmax=10.0, ymin=0.0, ymax=10.0, h=0.02):
     """Make meshgrid for SVM color plot given a region.
 
     Args:
-        x_min (float, optional): x_limit. Defaults to 0..
-        x_max (float, optional): x_limit. Defaults to 10..
-        y_min (float, optional): y_limit. Defaults to 0..
-        y_max (float, optional): y_limit. Defaults to 10..
+        x{min,max} (float, optional): x_limit.
+        y{min,max} (float, optional): y_limit.
         h (float, optional): step size for each grid. Defaults to 0.02.
 
     Returns:
         xx, yy (np.array, np.array): meshgrid
     """
-    x_min, x_max = x_min - 1, x_max + 1
-    y_min, y_max = y_min - 1, y_max + 1
+    x_min, x_max = xmin - 1, xmax + 1
+    y_min, y_max = ymin - 1, ymax + 1
     xx, yy = np.meshgrid(
         np.arange(x_min, x_max, h), np.arange(y_min, y_max, h)
     )
@@ -96,14 +120,8 @@ def reset(fig, ax, X, Y):
 def redraw(fig, ax, X, Y, refresh=True):
     """Redraw the plot with the given data points."""
     init_ax(fig, ax)
-    ax.scatter(
-        X[:, 0],
-        X[:, 1],
-        marker="o",
-        c=Y,
-        s=25,
-        edgecolor="k",
-    )
+    plot_scatter(ax, X[:, 0], X[:, 1], Y)
+
     if refresh:
         fig.canvas.draw()
 
@@ -156,10 +174,7 @@ def infer(fig, ax, X, Y, plot_param):
     print("Fitting....")
     model.fit(X, Y)
     print("Plotting....")
-    X = np.array(X)
-    Y = np.array(Y)
-    X0, X1 = X[:, 0], X[:, 1]
-    xx, yy = make_meshgrid(X0, X1)
+    xx, yy = make_meshgrid()
 
     plot_contours(ax, model, xx, yy, cmap=plt.cm.coolwarm, alpha=0.8)
     plot_svc_decision_function(model, ax)
@@ -193,6 +208,7 @@ def onpress(event, fig, ax, X, Y, plot_param):
         reset(fig, ax, X, Y)
         plot_param.allow_press = True
         plot_param.allow_infer = True
+        plot_param.showed_tooltip = False
     elif pressed_key == "redraw":
         if not X or not Y:
             reset(fig, ax, X, Y)
@@ -200,40 +216,21 @@ def onpress(event, fig, ax, X, Y, plot_param):
             redraw(fig, ax, np.array(X), Y)
         plot_param.allow_press = True
         plot_param.allow_infer = True
+        plot_param.showed_tooltip = False
     elif pressed_key == "create_linear_separable":
-        reset(fig, ax, X, Y)
-        plot_param.allow_press = False
-        plot_param.allow_infer = True
-
-        a, b = generate_linear_separable_dataset()
-        X.extend(a)
-        Y.extend(b)
-        ax.scatter(
-            a[:, 0],
-            a[:, 1],
-            marker="o",
-            c=b,
-            s=25,
-            edgecolor="k",
+        generate_data_then_plot(
+            fig, ax, X, Y, plot_param, generate_linear_separable_dataset
         )
-        fig.canvas.draw()
     elif pressed_key == "create_nonlinear_separable":
-        reset(fig, ax, X, Y)
-        plot_param.allow_press = False
-        plot_param.allow_infer = True
-
-        a, b = generate_nonlinear_separable_dataset(mean=[5.0, 5.0])
-        X.extend(a)
-        Y.extend(b)
-        ax.scatter(
-            a[:, 0],
-            a[:, 1],
-            marker="o",
-            c=b,
-            s=25,
-            edgecolor="k",
+        generate_data_then_plot(
+            fig,
+            ax,
+            X,
+            Y,
+            plot_param,
+            partial(generate_nonlinear_separable_dataset, mean=[5.0, 5.0]),
         )
-        fig.canvas.draw()
+
     elif pressed_key == "infer":
         if not X or not Y:
             print("No data to infer.")
@@ -243,11 +240,35 @@ def onpress(event, fig, ax, X, Y, plot_param):
             return
         plot_param.allow_press = False
         plot_param.allow_infer = False
+        plot_param.showed_tooltip = False
+
         infer(fig, ax, X, Y, plot_param)
     elif pressed_key == "toggle_kernels":
         plot_param.kernel_idx = (plot_param.kernel_idx + 1) % len(kernel_list)
         kernel = kernel_list[plot_param.kernel_idx]
         print("Current kernel:", kernel)
+    elif pressed_key == "show_help":
+        if plot_param.showed_tooltip:
+            return
+        s = ""
+        for i, (k, v) in enumerate(key_dict.items()):
+            k = k if k != " " else "<space>"
+            s += k + ": " + v
+            if (i + 1) % 3 == 0:
+                s += "\n"
+            else:
+                s += "; "
+
+        plt.text(
+            x=0.0,
+            y=0.03,
+            s=s,
+            fontsize=10,
+            ha="left",
+            transform=fig.transFigure,
+        )
+        plot_param.showed_tooltip = True
+        fig.canvas.draw()
 
 
 def create_data_then_infer():
