@@ -10,6 +10,25 @@ from svm.utils import BaseException
 logging.basicConfig(level=logging.DEBUG)
 
 
+def cal_gamma_value(x, gamma):
+    """Calculate the gamma value of input.
+    Args
+    ----------
+        x: input arrays
+
+    Return
+    ----------
+        gamma_value(x)
+    """
+    if gamma not in ["scale", "auto"]:
+        raise BaseException("Wrong gamma parameter!")
+
+    if gamma == "scale":
+        return 1 / (x.shape[0] * np.var(x))
+    else:
+        return 1 / x.shape[0]
+
+
 def linear_kernel(x, z):
     """Calculate the dot product btw two vectors.
     Args
@@ -33,7 +52,9 @@ def polynomial_kernel(x, z, coef, gamma, degree):
     ----------
         poly(x, z)
     """
-    return (coef + gamma * np.dot(x, z)) ** degree
+    gamma_value = cal_gamma_value(x, gamma)
+
+    return (coef + gamma_value * np.dot(x, z)) ** degree
 
 
 def rbf_kernel(x, z, gamma):
@@ -46,11 +67,13 @@ def rbf_kernel(x, z, gamma):
     ----------
         rbf(x, z)
     """
-    if gamma < 0:
-        raise "Gamma value must greater than zero."
+    gamma_value = cal_gamma_value(x, gamma)
+
+    if gamma_value < 0:
+        raise BaseException("Gamma value must greater than zero.")
 
     return np.exp(
-        -1.0 * gamma * np.dot(np.subtract(x, z).T, np.subtract(x, z))
+        -1.0 * gamma_value * np.dot(np.subtract(x, z).T, np.subtract(x, z))
     )
 
 
@@ -65,8 +88,9 @@ def sigmoid_kernel(x, z, gamma, coef):
     ----------
         sigmoid(x, z)
     """
+    gamma_value = cal_gamma_value(x, gamma)
     # TODO: Check x: make sure input x can be transpose
-    return np.tanh(gamma * np.dot(x, z) + coef)
+    return np.tanh(gamma_value * np.dot(x, z) + coef)
 
 
 def get_kernel_function(kernel="rbf", degree=3.0, gamma="scale", coef=0.0):
@@ -84,13 +108,12 @@ def get_kernel_function(kernel="rbf", degree=3.0, gamma="scale", coef=0.0):
     """
 
     degree = float(degree)
-    gamma = float(gamma)
     kernel = kernel.lower().strip()
 
     default_kernels = ["linear", "poly", "rbf", "sigmoid"]
 
     if kernel not in default_kernels:
-        return BaseException(
+        raise BaseException(
             "SVM currently support ['linear'1, 'poly', \
             'rbf','sigmoid'] kernels, please choose again!"
         )
