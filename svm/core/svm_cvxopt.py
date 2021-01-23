@@ -7,6 +7,7 @@ class SVM_cvxopt:
     def __init__(self):
         self.w = None
         self.b = None
+        self.support_vectors_ = None
         pass
 
     def fit(self, X, y):
@@ -14,12 +15,14 @@ class SVM_cvxopt:
         Training an SVM classifier using input data
 
         Args:
-            X: Training features. Shape (d,N) with d is number of dimension
+            X: Training features. Shape (N,d) with d is number of dimension
             and N is the number of data points
-            y: Training labels. Shape (1,N) with N is the number of data
+            y: Training labels. Shape (N,) with N is the number of data
             points
         """
-        N = len(X.T)
+        N = len(X)
+        X = X.T
+        y = y.reshape((1, N))
         V = X * y
         K = matrix(V.T.dot(V))
         p = matrix(-np.ones((N, 1)))  # all-one vector
@@ -28,6 +31,7 @@ class SVM_cvxopt:
         h = matrix(np.zeros((N, 1)))
         A = matrix(y)  # the equality constrain is actually y^T lambda = 0
         b = matrix(np.zeros((1, 1)))
+
         solvers.options["show_progress"] = False
         sol = solvers.qp(K, p, G, h, A, b)
         lamda_matrix = np.array(sol["x"])
@@ -43,6 +47,8 @@ class SVM_cvxopt:
         # calculate w and b
         self.w = VS.dot(lS).T
         self.b = np.mean(yS.T - self.w.dot(XS))
+        self.lamda_matrix = lamda_matrix
+        self._get_support_vectors(X.T)
 
     def predict(self, features):
         """
@@ -70,3 +76,13 @@ class SVM_cvxopt:
             )
 
         return np.squeeze(np.sign(np.dot(self.w, features.T) + self.b))
+
+    def decision_function(self, features):
+        return np.dot(self.w, features.T) + self.b
+
+    def _get_support_vectors(self, features):
+        distance_to_margin = self.decision_function(features)
+        support_vectors_index = np.where(
+            np.abs(distance_to_margin[0]) <= 1 + 1e-1
+        )
+        self.support_vectors_ = features[support_vectors_index]

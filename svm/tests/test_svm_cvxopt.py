@@ -22,10 +22,16 @@ def test_result_to_sklearn():
     svm_opt = SVM_cvxopt()
     clf = SVC(kernel="linear", C=1e5)
 
-    svm_opt.fit(X, y)
     y1 = y.reshape((2 * N,))
     X1 = X.T  # each sample is one row
+
+    svm_opt.fit(X.T, y1)
     clf.fit(X1, y1)
+
+    # print(y.shape)
+    # print(y1.shape)
+
+    # print(y, y1)
 
     w_sklearn = clf.coef_
     b_sklearn = clf.intercept_
@@ -49,4 +55,9 @@ def test_result_to_sklearn():
     ]
     prediction_diff = clf.predict(points) - svm_opt.predict(points)
 
+    # print(svm_opt.decision_function(X.T))
+    # print(svm_opt.lamda_matrix)
+    print(svm_opt.support_vectors_)
+    print(clf.support_vectors_)
+    # a = a/0
     assert np.all([prediction_diff == 0])
