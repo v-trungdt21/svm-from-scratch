@@ -47,6 +47,6 @@ $ pre-commit install
 
 - Phan Hoang Viet
 - Tran Duc Nam
-- Nguyen Hoang Tuan Duy
+- Nguyen Hien Tuan Duy
 - Dao Tuan Trung
 - Mentor: Dzung Nguyen

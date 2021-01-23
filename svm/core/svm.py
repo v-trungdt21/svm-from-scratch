@@ -7,17 +7,24 @@ from .kernels import get_kernel_function
 
 class SVM:
     def __init__(
-        self, kernel="linear", C=None, degree=2.0, gamma=5.0, coef=1.0
+        self,
+        kernel="linear",
+        C=None,
+        degree=2.0,
+        gamma=5.0,
+        coef0=1.0,
+        max_iter=-1,
     ):
         """Initialize SVM model
         kernel: Specifies the kernel type to be used in the algorithm.
         C: Regularization parameter. If None, use linear SVM.
         degree: Degree of the polynomial kernel function (‘poly’). Ignored by all other kernels.
         gamma: Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’.
-        coef: Independent term in kernel function. It is only significant in ‘poly’ and ‘sigmoid’.
+        coef0: Independent term in kernel function. It is only significant in ‘poly’ and ‘sigmoid’.
+        max_iter: #iterations for CVXOPT. -1 for unlimited.
         """
         self.kernel = get_kernel_function(
-            kernel, degree=degree, gamma=gamma, coef=coef
+            kernel, degree=degree, gamma=gamma, coef=coef0
         )
         self.C = C
         if self.C is not None:

@@ -1,5 +1,10 @@
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.datasets import make_blobs, make_gaussian_quantiles
+
+import svm
 
 
 def generate_linear_separable_dataset(
@@ -13,6 +18,15 @@ def generate_linear_separable_dataset(
         center_box=[0.0, 8.0],
         random_state=seed,
     )
+    return X, Y
+
+
+def generate_nonlinear_separable_dataset_2():
+    path = os.path.dirname(svm.__file__)
+    data_path = os.path.join(path, "assets/data")
+    X = np.load(data_path + "/X_non_linear_separable.npy")
+    Y = np.load(data_path + "/Y_non_linear_separable.npy")
+
     return X, Y
 
 

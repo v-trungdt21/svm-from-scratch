@@ -2,6 +2,10 @@ from functools import partial
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.svm import SVC
+
+from svm.core.svm import SVM
+from svm.core.svm_cvxopt import SVM_cvxopt
 
 
 class Param:
@@ -11,14 +15,46 @@ class Param:
     """
 
     def __init__(self):
-        self.kernel_idx = 0
         self.allow_press = True
         self.allow_infer = True
         self.showed_tooltip = False
+
+        self.ax_x_lim = [0.0, 10.0]
+        self.ax_y_lim = [0.0, 10.0]
+
         self.kernel_list = ["linear", "poly", "rbf", "sigmoid"]
+        self.kernel_idx = 0
+        self.model_list = ["sklearn", "cvxopt", "smo"]
+        self.model_idx = 0
+        self.model_dict = {"sklearn": SVC, "cvxopt": SVM_cvxopt, "smo": SVM}
+
+        # Model parameters
+        self.C = 1.0
+        self.tol = 0.001
+        self.degree = 3
+        self.gamma = "scale"
+        self.max_iter = -1
+        self.coef0 = 0.0
 
     def get_kernel(self):
         return self.kernel_list[self.kernel_idx]
+
+    def get_model_name(self):
+        return self.model_list[self.model_idx]
+
+    def get_model(self):
+        return self.model_dict[self.get_model_name()]
+
+    def get_model_params(self):
+        return dict(
+            C=self.C,
+            tol=self.tol,
+            degree=self.degree,
+            gamma=self.gamma,
+            max_iter=self.max_iter,
+            coef0=self.coef0,
+            kernel=self.get_kernel(),
+        )
 
 
 def plot_scatter(ax, X1, X2, Y):
