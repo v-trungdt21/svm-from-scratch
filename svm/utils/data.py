@@ -14,8 +14,8 @@ def generate_linear_separable_dataset_old(
         n_samples=n_samples,
         n_features=n_features,
         centers=n_classes,
-        cluster_std=0.1,
-        center_box=[3.0, 5.0],
+        cluster_std=1.0,
+        center_box=[0.0, 8.0],
         random_state=seed,
     )
     return X, Y
