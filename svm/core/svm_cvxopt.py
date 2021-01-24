@@ -4,7 +4,7 @@ from cvxopt import matrix, printing, solvers
 
 
 class SVM_cvxopt:
-    def __init__(self):
+    def __init__(self, **params):
         self.w = None
         self.b = None
         self.support_vectors_ = None
@@ -20,6 +20,21 @@ class SVM_cvxopt:
             y: Training labels. Shape (N,) with N is the number of data
             points
         """
+        if not isinstance(X, np.ndarray):
+            X = np.asarray(X, dtype=np.double)
+        if len(X.shape) != 2:
+            raise ValueError(
+                "The shape of the dimension of features (%d) should be Nxd."
+            )
+
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y, dtype=np.double)
+
+        if y.shape[0] != X.shape[0]:
+            X = X.T
+        if y.shape[0] != X.shape[0]:
+            raise ValueError("Shape mismatches between X and Y.")
+
         N = len(X)
         X = X.T
         y = y.reshape((1, N))
@@ -30,6 +45,7 @@ class SVM_cvxopt:
         G = matrix(-np.eye(N))  # for all lambda_n >= 0
         h = matrix(np.zeros((N, 1)))
         A = matrix(y)  # the equality constrain is actually y^T lambda = 0
+        # print(A)
         b = matrix(np.zeros((1, 1)))
 
         solvers.options["show_progress"] = False

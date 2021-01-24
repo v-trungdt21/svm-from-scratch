@@ -24,7 +24,8 @@ def test_result_to_sklearn():
 
     y1 = y.reshape((2 * N,))
     X1 = X.T  # each sample is one row
-
+    # print(X, y1)
+    # print(X.shape, y1.shape)
     svm_opt.fit(X.T, y1)
     clf.fit(X1, y1)
 
@@ -61,3 +62,7 @@ def test_result_to_sklearn():
     print(clf.support_vectors_)
     # a = a/0
     assert np.all([prediction_diff == 0])
+
+
+if __name__ == "__main__":
+    test_result_to_sklearn()
