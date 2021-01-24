@@ -1,7 +1,9 @@
 # Support Vector Machine from scratch
+
 Build SVM from scratch using only Python and some helper libraries: pandas, numpy,..
 
 There are 5 tasks in total:
+
 - **Task 1**: Inference ([progress](docs/task1.md)).
 - **Task 2**: Kernelize SVM ([progress](docs/task2.md)).
 - **Task 3**: Training using convex optimization library ([progress](docs/task3.md)).
@@ -9,22 +11,29 @@ There are 5 tasks in total:
 - **Task 5**: Visualization + Comparison with sklearn ([progress](docs/task5.md)).
 
 # Installation guide 🔥
+
 ```
 $ git clone https://github.com/trungdt21/svm-from-scratch
 $ cd svm-from-scratch
+
+# if you use pip
 $ pip install -r requirements.txt
+# if you use conda
+$ conda create -n svm --file package-list.txt
+
 $ pip install -e .
 $ pre-commit install
 ```
 
 ## Currently used hooks:
+
 - `isort`: Sort imports.
 - `black`: General python formatter.
 - `flake8`: Check PEP8 convention.
 - `pre-commit`: Run those hooks before commits.
 
-
 # Work Convention ✨
+
 - Code convention: Follow PEP8 convention (include docstrings for functions).
 - Update `__init__.py` when you add new modules.
 - Use pre-commit so that the code would not be messy when merge between commits:
@@ -35,6 +44,7 @@ $ pre-commit install
 - Write tests if you can.
 
 # Contributors 🥺
+
 - Phan Hoang Viet
 - Tran Duc Nam
 - Nguyen Hien Tuan Duy
