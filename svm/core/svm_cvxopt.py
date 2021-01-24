@@ -1,13 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from cvxopt import matrix, printing, solvers
+from cvxopt import matrix, solvers
+
+from svm.core.kernels import get_kernel_function
 
 
 class SVM_cvxopt:
-    def __init__(self, **params):
+    def __init__(
+        self, C=100, kernel="linear", degree=3.0, gamma=1.0, coef=0.0, **params
+    ):
         self.w = None
         self.b = None
         self.support_vectors_ = None
+        self.kernel = get_kernel_function(
+            kernel=kernel, degree=degree, gamma=gamma, coef=coef
+        )
+        self.C = C
         pass
 
     def fit(self, X, y):
@@ -39,13 +47,14 @@ class SVM_cvxopt:
         X = X.T
         y = y.reshape((1, N))
         V = X * y
-        K = matrix(V.T.dot(V))
+        V_kernel = self.kernel(V.T, V)
+        K = matrix(V_kernel)
         p = matrix(-np.ones((N, 1)))  # all-one vector
         # Build A, b, G, h
-        G = matrix(-np.eye(N))  # for all lambda_n >= 0
-        h = matrix(np.zeros((N, 1)))
+        G = matrix(np.vstack((-np.eye(N), np.eye(N))))  # for all lambda_n >= 0
+        h = matrix(np.vstack((np.zeros((N, 1)), self.C * np.ones((N, 1)))))
+
         A = matrix(y)  # the equality constrain is actually y^T lambda = 0
-        # print(A)
         b = matrix(np.zeros((1, 1)))
 
         solvers.options["show_progress"] = False

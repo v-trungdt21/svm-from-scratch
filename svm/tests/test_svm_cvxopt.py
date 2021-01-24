@@ -4,6 +4,7 @@ import sklearn
 from sklearn.svm import SVC
 
 from svm.core.svm_cvxopt import SVM_cvxopt
+from svm.utils.data import generate_linear_separable_dataset_old
 
 
 def test_result_to_sklearn():
@@ -25,7 +26,7 @@ def test_result_to_sklearn():
     y1 = y.reshape((2 * N,))
     X1 = X.T  # each sample is one row
     # print(X, y1)
-    # print(X.shape, y1.shape)
+    print(X.shape, y1.shape)
     svm_opt.fit(X.T, y1)
     clf.fit(X1, y1)
 
@@ -43,6 +44,8 @@ def test_result_to_sklearn():
     w_diff = w_sklearn - w_svm_cvxopt
     b_diff = b_sklearn - b_svm_cvxopt
 
+    print(w_sklearn, w_svm_cvxopt)
+    print(b_sklearn, b_svm_cvxopt)
     # Test training SVM
     assert np.all([w_diff < epsilon])
     assert np.all([b_diff < epsilon])
@@ -58,11 +61,52 @@ def test_result_to_sklearn():
 
     # print(svm_opt.decision_function(X.T))
     # print(svm_opt.lamda_matrix)
-    print(svm_opt.support_vectors_)
-    print(clf.support_vectors_)
+    # print(svm_opt.support_vectors_)
+    # print(clf.support_vectors_)
     # a = a/0
     assert np.all([prediction_diff == 0])
 
 
+def test_result_with_data_gen():
+
+    epsilon = 1e-2
+    X, y = generate_linear_separable_dataset_old(
+        n_samples=20, n_features=2, n_classes=2, seed=8080
+    )
+
+    # X, y = generate_linear_separable_dataset()
+    X = X.astype("float")
+    y = y.astype("float")
+
+    svm_opt = SVM_cvxopt(C=0.001)
+    clf = SVC(kernel="linear", C=0.001)
+
+    print(type(X))
+    print(X.shape, y.shape)
+
+    idx = np.where(y == 0)
+    y[idx] = -1
+
+    svm_opt.fit(X, y)
+    clf.fit(X, y)
+
+    w_sklearn = clf.coef_
+    b_sklearn = clf.intercept_
+
+    w_svm_cvxopt = svm_opt.w
+    b_svm_cvxopt = svm_opt.b
+
+    w_diff = w_sklearn - w_svm_cvxopt
+    b_diff = b_sklearn - b_svm_cvxopt
+
+    print(w_sklearn, w_svm_cvxopt)
+    print(b_sklearn, b_svm_cvxopt)
+    # Test training SVM
+    assert np.all([w_diff < epsilon])
+    assert np.all([b_diff < epsilon])
+    # a=a/0
+
+
 if __name__ == "__main__":
     test_result_to_sklearn()
+    # test_result_with_data_gen()
