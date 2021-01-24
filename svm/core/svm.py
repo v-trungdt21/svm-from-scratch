@@ -1,55 +1,88 @@
 import numpy as np
 
+from svm.core.kernels import get_kernel_function
+from svm.core.opt.smo import SequentialMinimalOptimizer as SMO
 from svm.utils import BaseException
-
-from .kernels import get_kernel_function
 
 
 class SVM:
     def __init__(
-        self, kernel="linear", C=None, degree=2.0, gamma=5.0, coef=1.0
+        self,
+        kernel="linear",
+        C=None,
+        degree=2.0,
+        gamma=5.0,
+        coef=1.0,
+        tol=1e-3,
+        max_iter=5,
     ):
         """Initialize SVM model
-        kernel: Specifies the kernel type to be used in the algorithm.
-        C: Regularization parameter. If None, use linear SVM.
-        degree: Degree of the polynomial kernel function (‘poly’). Ignored by all other kernels.
-        gamma: Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’.
-        coef: Independent term in kernel function. It is only significant in ‘poly’ and ‘sigmoid’.
+
+        Args:
+            kernel: Specifies the kernel type to be used in the algorithm.
+            C: Regularization parameter. If None, use linear SVM.
+            degree: Degree of the polynomial kernel function (‘poly’). Ignored by all other kernels.
+            gamma: Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’.
+            coef: Independent term in kernel function. It is only significant in ‘poly’ and ‘sigmoid’.
+            tol: Tolerance for stopping criterion.
         """
         self.kernel = get_kernel_function(
             kernel, degree=degree, gamma=gamma, coef=coef
         )
+
         self.C = C
         if self.C is not None:
             self.C = float(self.C)
 
-    def fit(self, data):
-        # gamma_value = self.cal_gamma_value(
-        #     data.X, self.gamma
-        # )  # TODO: type of input data must be np.
-        pass
+        self.tol = tol
+        self.max_iter = max_iter
 
-    def predict(self, features):
-        """Infer feature set after training.
-        features: np.array: data you need to infer.
-        output: {-1,1}: label.
+    def fit(self, X, y, optimizer="smo"):
+        """Fit the SVM model according to the given training data.
+
+        Args:
+            X: Training feature vectors.
+            y: Target values (class labels in classification, real numbers in regression)
+            optimizer: Training optimizer
+
         """
-        if (
-            not hasattr(self, "w")
-            and not hasattr(self, "b")
-            and not hasattr(self, "support_vectors")
-        ):
-            raise BaseException("Please fit the model before inference.")
-        X = np.asarray(features)
-        if hasattr(self, "w"):
-            return np.sign(np.dot(self.w, X) + self.b)
-        # TODO: calculate sum based on alpha, support vector and kernel
+        if optimizer == "smo":
+            opt = SMO(X, y, self.C, self.kernel, self.tol)
         else:
-            # bs = X.shape[0]
-            # y_hat = np.zeros(bs)
-            # for i in range(bs):
-            #     s = 0
-            return None
+            raise BaseException("Optimizer not implemented.")
+
+        self.dual_coef_, self.coef_, self.intercept_ = opt.solve(
+            max_iter=self.max_iter
+        )
+
+        self.support_vectors_ = X[np.where(self.dual_coef_ > 0)[0], :]
+        self.n_support_ = self.support_vectors_.shape
+
+    # def decision_function(self, X):
+
+    # def predict(self, X):
+    #     """Perform model inference on feature vectors in X
+
+    #     Args:
+    #         X: np.array: data you need to infer.
+
+    #     """
+    #     if (
+    #         not hasattr(self, "coef_")
+    #         and not hasattr(self, "intercept_")
+    #         and not hasattr(self, "support_vectors_")
+    #     ):
+    #         raise BaseException("Please fit the model before inference.")
+    #     X = np.asarray(features)
+    #     if hasattr(self, "coef_"):
+    #         return np.sign(np.dot(self.w, X) + self.b)
+    #     # TODO: calculate sum based on alpha, support vector and kernel
+    #     else:
+    #         # bs = X.shape[0]
+    #         # y_hat = np.zeros(bs)
+    #         # for i in range(bs):
+    #         #     s = 0
+    #        return None
 
     def cal_gamma_value(self, x, gamma="scale"):
         """Calculate the gamma value of input.
