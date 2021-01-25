@@ -32,7 +32,7 @@ class Param:
         self.C = 1.0
         self.tol = 0.001
         self.degree = 3
-        self.gamma = "scale"
+        self.gamma = 1.0
         self.max_iter = -1
         self.coef0 = 0.0
 

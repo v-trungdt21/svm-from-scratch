@@ -1,8 +1,49 @@
+from functools import partial
+
 import matplotlib.pyplot as plt
 import numpy as np
 from cvxopt import matrix, solvers
+from sklearn.metrics.pairwise import (
+    polynomial_kernel,
+    rbf_kernel,
+    sigmoid_kernel,
+)
 
 from svm.core.kernels import get_kernel_function
+
+
+def get_kernel_function_new(kernel="rbf", degree=3.0, gamma=1.0, coef=0.0):
+    """Calculate the sigmoid value btw two vectors.
+    Args
+    ----------
+        x, z: input arrays
+        degree: (int, default=3). Value in poly kernel
+        gamma: ('scale', 'auto') or float. Value in poly, sigmoid, rbf kernels
+        coef: (float, default=0.0). Value in poly, sigmoid kernels
+
+    Return
+    ----------
+        cal_kernel_(x, z)
+    """
+
+    degree = float(degree)
+    kernel = kernel.lower().strip()
+
+    default_kernels = ["linear", "poly", "rbf", "sigmoid"]
+
+    if kernel not in default_kernels:
+        raise BaseException(
+            "SVM currently support ['linear'1, 'poly', \
+            'rbf','sigmoid'] kernels, please choose again!"
+        )
+    elif kernel == "poly":
+        return partial(
+            polynomial_kernel, coef0=coef, gamma=gamma, degree=degree
+        )
+    elif kernel == "rbf":
+        return partial(rbf_kernel, gamma=gamma)
+    elif kernel == "sigmoid":
+        return partial(sigmoid_kernel, gamma=gamma, coef0=coef)
 
 
 class SVM_cvxopt:
@@ -12,11 +53,15 @@ class SVM_cvxopt:
         self.w = None
         self.b = None
         self.support_vectors_ = None
-        self.kernel = get_kernel_function(
-            kernel=kernel, degree=degree, gamma=gamma, coef=coef
-        )
+        if kernel == "linear":
+            self.kernel = get_kernel_function(
+                kernel=kernel, degree=degree, gamma=gamma, coef=coef
+            )
+        else:
+            self.kernel = get_kernel_function_new(
+                kernel=kernel, degree=degree, gamma=gamma, coef=coef
+            )
         self.C = C
-        pass
 
     def fit(self, X, y):
         """
@@ -46,6 +91,7 @@ class SVM_cvxopt:
         N = len(X)
         X = X.T
         y = y.reshape((1, N))
+
         V = X * y
         V_kernel = self.kernel(V.T, V)
         K = matrix(V_kernel)
@@ -61,8 +107,15 @@ class SVM_cvxopt:
         sol = solvers.qp(K, p, G, h, A, b)
         lamda_matrix = np.array(sol["x"])
         # Find the support vectors
-        epsilon = 1e-6  # just a small number, greater than 1e-9
+        epsilon = 1e-1  # just a small number, greater than 1e-9
+
         S = np.where(lamda_matrix > epsilon)[0]
+        S2 = np.where(lamda_matrix < 0.999 * self.C)[0]
+
+        M = [val for val in S if val in S2]
+
+        self.margin_features = X[:, M]
+        self.margin_labels = y[:, M]
 
         VS = V[:, S]
         XS = X[:, S]
@@ -71,9 +124,15 @@ class SVM_cvxopt:
 
         # calculate w and b
         self.w = VS.dot(lS).T
-        self.b = np.mean(yS.T - self.w.dot(XS))
+        self.b = np.mean(
+            self.margin_labels.T - self.w.dot(self.margin_features)
+        )
         self.lamda_matrix = lamda_matrix
-        self._get_support_vectors(X.T)
+        # self._get_support_vectors(X.T)
+
+        self.support_vectors_ = XS
+        self.support_vectors_label = yS
+        self.lamda_support_vectors = lamda_matrix[S]
 
     def predict(self, features):
         """
@@ -100,14 +159,14 @@ class SVM_cvxopt:
                 % (features.shape[-1], self.w.shape[-1])
             )
 
-        return np.squeeze(np.sign(np.dot(self.w, features.T) + self.b))
+        return np.squeeze(np.sign(self.decision_function(features)))
 
     def decision_function(self, features):
-        return np.dot(self.w, features.T) + self.b
-
-    def _get_support_vectors(self, features):
-        distance_to_margin = self.decision_function(features)
-        support_vectors_index = np.where(
-            np.abs(distance_to_margin[0]) <= 1 + 1e-1
+        A = np.dot(
+            self.lamda_support_vectors.T * self.support_vectors_label,
+            self.kernel(self.support_vectors_.T, features.T),
         )
-        self.support_vectors_ = features[support_vectors_index]
+        return A + self.b
+        # return np.dot(self.w, features.T) + self.b
+
+    # def _get_support_vectors(self, features):
