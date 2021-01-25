@@ -11,7 +11,7 @@ class SVM:
         kernel="linear",
         C=None,
         degree=2.0,
-        gamma=5.0,
+        gamma="scale",
         coef0=1.0,
         max_iter=-1,
     ):
@@ -23,9 +23,9 @@ class SVM:
         coef0: Independent term in kernel function. It is only significant in ‘poly’ and ‘sigmoid’.
         max_iter: #iterations for CVXOPT. -1 for unlimited.
         """
-        self.kernel = get_kernel_function(
-            kernel, degree=degree, gamma=gamma, coef=coef0
-        )
+        # self.kernel = get_kernel_function(
+        #     kernel, degree=degree, gamma=gamma, coef=coef0
+        # )
         self.C = C
         if self.C is not None:
             self.C = float(self.C)
@@ -58,6 +58,27 @@ class SVM:
             #     s = 0
             return None
 
+    def cal_kernel_value(self, x, z, kernel, degree, gamma, coef):
+        """Calculate the kernel value of input.
+        Args
+        ----------
+            x: input arrays
+
+        Return
+        ----------
+            gamma_value(x)
+        """
+        gamma_value = self.cal_gamma_value(x, gamma=gamma)
+
+        self.kernel_func = get_kernel_function(
+            kernel, degree=degree, gamma=gamma_value, coef=coef
+        )
+
+        if x.ndim == 1 and z.ndim == 1:
+            return self.kernel_func(x, z)
+        else:
+            raise BaseException("Currently not handle multidimension")
+
     def cal_gamma_value(self, x, gamma="scale"):
         """Calculate the gamma value of input.
         Args
@@ -68,9 +89,14 @@ class SVM:
         ----------
             gamma_value(x)
         """
+        if x.ndim == 1:
+            n_features = 1
+        else:
+            _, n_features = x.ndim
+
         if gamma == "scale":
-            return 1 / (x.shape[0] * np.var(x))
+            return 1 / (n_features * np.var(x))
         elif gamma == "auto":
-            return 1 / x.shape[0]
+            return 1 / n_features
         else:
             return float(gamma)
