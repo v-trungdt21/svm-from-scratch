@@ -49,9 +49,7 @@ def rbf_kernel(x, z, gamma):
     if gamma < 0:
         raise BaseException("Gamma value must greater than zero.")
 
-    return np.exp(
-        -1.0 * gamma * np.dot(np.subtract(x, z).T, np.subtract(x, z))
-    )
+    return np.exp(-1.0 * gamma * np.linalg.norm(x - z) ** 2)
 
 
 def sigmoid_kernel(x, z, gamma, coef):

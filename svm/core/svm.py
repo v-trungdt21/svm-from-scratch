@@ -58,7 +58,7 @@ class SVM:
             #     s = 0
             return None
 
-    def cal_gamma_value(self, x, gamma="scale"):
+    def cal_gamma_value(x, gamma="scale"):
         """Calculate the gamma value of input.
         Args
         ----------
@@ -68,9 +68,14 @@ class SVM:
         ----------
             gamma_value(x)
         """
+        if x.ndim == 1:
+            n_features = 1
+        else:
+            n_features = x.shape[1]
+
         if gamma == "scale":
-            return 1 / (x.shape[0] * np.var(x))
+            return 1 / (n_features * np.var(x))
         elif gamma == "auto":
-            return 1 / x.shape[0]
+            return 1 / n_features
         else:
             return float(gamma)
