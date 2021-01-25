@@ -57,11 +57,11 @@ class SVM_cvxopt:
         self.b = None
         self.support_vectors_ = None
         if kernel == "linear":
-            self.kernel = get_kernel_function_new(
+            self.kernel = get_kernel_function(
                 kernel=kernel, degree=degree, gamma=gamma, coef=coef
             )
         else:
-            self.kernel = get_kernel_function_new(
+            self.kernel = get_kernel_function(
                 kernel=kernel, degree=degree, gamma=gamma, coef=coef
             )
         self.C = C
@@ -95,8 +95,12 @@ class SVM_cvxopt:
         X = X.T
         y = y.reshape((1, N))
 
-        X_kernel = self.kernel(X.T, X.T)
+        X_kernel = self.kernel(X, X)
         V = X * y
+
+        print("Shape of things")
+        print(np.outer(y, y).shape)
+        print(X_kernel.shape)
 
         V_kernel = np.outer(y, y) * X_kernel
         # V_kernel = self.kernel(V, V)
@@ -178,8 +182,10 @@ class SVM_cvxopt:
         return np.squeeze(np.sign(self.decision_function(features)))
 
     def decision_function(self, features):
+        print("Decision")
+        print(self.support_vectors_.shape, features.shape)
         A = np.dot(
             self.lamda_support_vectors.T * self.support_vectors_label,
-            self.kernel(self.support_vectors_, features),
+            self.kernel(self.support_vectors_.T, features.T),
         )
         return A + self.b

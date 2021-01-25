@@ -72,7 +72,7 @@ def test_result_to_sklearn():
 
 
 def test_result_with_data_gen():
-    test_kernel = "poly"
+    test_kernel = "linear"
     epsilon = 2 * 1e-2
     # X, y = generate_nonlinear_separable_dataset_old()
 
