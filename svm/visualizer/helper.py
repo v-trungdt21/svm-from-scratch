@@ -6,6 +6,7 @@ from sklearn.svm import SVC
 
 from svm.core.svm import SVM
 from svm.core.svm_cvxopt import SVM_cvxopt
+from svm.core.svm_cvxopt_backup import SVM_cvx_backup
 
 
 class Param:
@@ -24,9 +25,14 @@ class Param:
 
         self.kernel_list = ["linear", "poly", "rbf", "sigmoid"]
         self.kernel_idx = 0
-        self.model_list = ["sklearn", "cvxopt", "smo"]
+        self.model_list = ["sklearn", "cvxopt", "svm_backup", "smo"]
         self.model_idx = 0
-        self.model_dict = {"sklearn": SVC, "cvxopt": SVM_cvxopt, "smo": SVM}
+        self.model_dict = {
+            "sklearn": SVC,
+            "cvxopt": SVM_cvxopt,
+            "svm_backup": SVM_cvx_backup,
+            "smo": SVM,
+        }
 
         # Model parameters
         self.C = 1.0
