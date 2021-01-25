@@ -20,7 +20,7 @@ def linear_kernel(x, z):
     ----------
         <x, z>
     """
-    return np.dot(x, z)
+    return np.dot(x.T, z)
 
 
 def polynomial_kernel(x, z, coef, gamma, degree):
@@ -33,7 +33,7 @@ def polynomial_kernel(x, z, coef, gamma, degree):
     ----------
         poly(x, z)
     """
-    return (coef + gamma * np.dot(x, z)) ** degree
+    return (coef + gamma * np.dot(x.T, z)) ** degree
 
 
 def rbf_kernel(x, z, gamma):
@@ -64,7 +64,7 @@ def sigmoid_kernel(x, z, gamma, coef):
         sigmoid(x, z)
     """
     # TODO: Check x: make sure input x can be transpose
-    return np.tanh(gamma * np.dot(x, z) + coef)
+    return np.tanh(gamma * np.dot(x.T, z) + coef)
 
 
 def get_kernel_function(kernel="rbf", degree=3.0, gamma=1.0, coef=0.0):
