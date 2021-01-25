@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cvxopt import matrix, solvers
 from sklearn.metrics.pairwise import (
+    linear_kernel,
     polynomial_kernel,
     rbf_kernel,
     sigmoid_kernel,
@@ -12,7 +13,7 @@ from sklearn.metrics.pairwise import (
 from svm.core.kernels import get_kernel_function
 
 
-def get_kernel_function_new(kernel="rbf", degree=3.0, gamma=1.0, coef=0.0):
+def get_kernel_function_new(kernel="rbf", degree=2.0, gamma=1.0, coef=0.0):
     """Calculate the sigmoid value btw two vectors.
     Args
     ----------
@@ -36,6 +37,8 @@ def get_kernel_function_new(kernel="rbf", degree=3.0, gamma=1.0, coef=0.0):
             "SVM currently support ['linear'1, 'poly', \
             'rbf','sigmoid'] kernels, please choose again!"
         )
+    elif kernel == "linear":
+        return partial(linear_kernel)
     elif kernel == "poly":
         return partial(
             polynomial_kernel, coef0=coef, gamma=gamma, degree=degree
@@ -54,7 +57,7 @@ class SVM_cvxopt:
         self.b = None
         self.support_vectors_ = None
         if kernel == "linear":
-            self.kernel = get_kernel_function(
+            self.kernel = get_kernel_function_new(
                 kernel=kernel, degree=degree, gamma=gamma, coef=coef
             )
         else:
@@ -92,9 +95,13 @@ class SVM_cvxopt:
         X = X.T
         y = y.reshape((1, N))
 
+        X_kernel = self.kernel(X.T, X.T)
         V = X * y
-        V_kernel = self.kernel(V.T, V)
+
+        V_kernel = np.outer(y, y) * X_kernel
+        # V_kernel = self.kernel(V, V)
         K = matrix(V_kernel)
+        print("V", V.shape)
         p = matrix(-np.ones((N, 1)))  # all-one vector
         # Build A, b, G, h
         G = matrix(np.vstack((-np.eye(N), np.eye(N))))  # for all lambda_n >= 0
@@ -106,8 +113,10 @@ class SVM_cvxopt:
         solvers.options["show_progress"] = False
         sol = solvers.qp(K, p, G, h, A, b)
         lamda_matrix = np.array(sol["x"])
+        lamda_matrix_ravel = np.ravel(sol["x"])
+
         # Find the support vectors
-        epsilon = 1e-1  # just a small number, greater than 1e-9
+        epsilon = 1e-5  # just a small number, greater than 1e-9
 
         S = np.where(lamda_matrix > epsilon)[0]
         S2 = np.where(lamda_matrix < 0.999 * self.C)[0]
@@ -122,15 +131,22 @@ class SVM_cvxopt:
         yS = y[:, S]
         lS = lamda_matrix[S]
 
-        # calculate w and b
         self.w = VS.dot(lS).T
-        self.b = np.mean(
-            self.margin_labels.T - self.w.dot(self.margin_features)
-        )
-        self.lamda_matrix = lamda_matrix
-        # self._get_support_vectors(X.T)
+        self.b = 0
 
-        self.support_vectors_ = XS
+        sv = lamda_matrix_ravel > epsilon
+
+        ind = np.arange(len(lamda_matrix))[sv]
+
+        a = lamda_matrix_ravel[sv]
+        sv_y = y[0, sv]
+
+        for n in range(len(a)):
+            self.b += sv_y[n]
+            self.b -= np.sum(a * sv_y * X_kernel[ind[n], sv])
+        self.b /= len(a)
+
+        self.support_vectors_ = XS.T
         self.support_vectors_label = yS
         self.lamda_support_vectors = lamda_matrix[S]
 
@@ -164,9 +180,6 @@ class SVM_cvxopt:
     def decision_function(self, features):
         A = np.dot(
             self.lamda_support_vectors.T * self.support_vectors_label,
-            self.kernel(self.support_vectors_.T, features.T),
+            self.kernel(self.support_vectors_, features),
         )
         return A + self.b
-        # return np.dot(self.w, features.T) + self.b
-
-    # def _get_support_vectors(self, features):

@@ -4,7 +4,11 @@ import sklearn
 from sklearn.svm import SVC
 
 from svm.core.svm_cvxopt import SVM_cvxopt
-from svm.utils.data import generate_linear_separable_dataset_old
+from svm.utils.data import (
+    generate_linear_separable_dataset,
+    generate_linear_separable_dataset_old,
+    generate_nonlinear_separable_dataset_old,
+)
 
 
 def test_result_to_sklearn():
@@ -70,9 +74,9 @@ def test_result_to_sklearn():
 def test_result_with_data_gen():
     test_kernel = "poly"
     epsilon = 2 * 1e-2
-    X, y = generate_linear_separable_dataset_old()
+    # X, y = generate_nonlinear_separable_dataset_old()
 
-    # X, y = generate_linear_separable_dataset()
+    X, y = generate_linear_separable_dataset_old()
     X = X.astype("float")
     y = y.astype("float")
 
@@ -80,7 +84,7 @@ def test_result_with_data_gen():
     sample_points = X[sample_idx]
 
     svm_opt = SVM_cvxopt(kernel=test_kernel, C=100)
-    clf = SVC(kernel=test_kernel, C=100)
+    clf = SVC(kernel=test_kernel, gamma=1, degree=2.0, C=100)
 
     # print(type(X))
     # print(X.shape, y.shape)
