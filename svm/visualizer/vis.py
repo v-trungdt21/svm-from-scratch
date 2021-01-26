@@ -4,7 +4,6 @@ from functools import partial
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.svm import SVC
 
 from svm.utils import (
     generate_linear_separable_dataset,

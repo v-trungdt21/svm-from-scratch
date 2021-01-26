@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.svm import SVC
 
-from svm.core.svm import SVM
-from svm.core.svm_cvxopt import SVM_cvxopt
+from svm.core import SVM, SVM_SMO, SVM_cvxopt
 from svm.core.svm_cvxopt_backup import SVM_cvx_backup
 
 
@@ -30,8 +29,8 @@ class Param:
         self.model_dict = {
             "sklearn": SVC,
             "cvxopt": SVM_cvxopt,
+            "smo": SVM_SMO,
             "svm_backup": SVM_cvx_backup,
-            "smo": SVM,
         }
 
         # Model parameters
