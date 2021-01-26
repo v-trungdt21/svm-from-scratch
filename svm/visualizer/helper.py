@@ -1,3 +1,4 @@
+import pprint
 from functools import partial
 
 import matplotlib.pyplot as plt
@@ -203,3 +204,22 @@ def infer(fig, ax, clf, X, Y, plot_param):
     plot_contours(ax, clf, xx, yy, cmap=plt.cm.coolwarm, alpha=0.8)
     plot_svc_decision_function(clf, ax)
     fig.canvas.draw()
+
+
+def change_parameters(plot_param: Param):
+    print("Which hyperparameter do you want to change?")
+    d = plot_param.get_model_params()
+    for i, (key, val) in enumerate(d.items()):
+        print(f"{i+1}. {key} (currently: {val})")
+    k = int(input("Input: "))
+    if k < 1 or k >= i:
+        print(f"Please choose number from [0,{i-1}]")
+    print(
+        "Reminder: Please input valid values since we currently don't support type check."
+    )
+    val = input("Value: ")
+    target_key = list(d.keys())[k - 1]
+    if val not in plot_param.kernel_list or val not in ["auto", "scale"]:
+        val = float(val)
+    setattr(plot_param, target_key, val)
+    print(f"Hyperparameter {target_key} changed.")

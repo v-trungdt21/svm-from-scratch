@@ -12,6 +12,7 @@ from svm.utils import (
 )
 from svm.visualizer.helper import (
     Param,
+    change_parameters,
     generate_data_then_plot,
     infer,
     plot_contours,
@@ -35,6 +36,7 @@ key_dict = {
     " ": "infer",
     "f2": "toggle_kernels",
     "f3": "toggle_models",
+    "c": "change_parameters",
     "/": "show_help",
 }
 
@@ -158,6 +160,8 @@ def onpress(event, fig, ax, X, Y, plot_param: Param):
         )
         plot_param.showed_tooltip = True
         fig.canvas.draw()
+    elif pressed_key == "change_parameters":
+        change_parameters(plot_param)
 
 
 def create_data_then_infer():
