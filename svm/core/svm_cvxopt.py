@@ -56,43 +56,10 @@ class SVM_cvxopt:
         self.w = None
         self.b = None
         self.support_vectors_ = None
-        if kernel == "rbf":
-            self.kernel = self.rbf_kernel(gamma=gamma)
-        else:
-            self.kernel = get_kernel_function(
-                kernel=kernel, degree=degree, gamma=gamma, coef=coef
-            )
-        self.C = C
-
-    def rbf_cal(self, X, Z, gamma):
-        X = X.T
-        Z = Z.T
-
-        kernel = get_kernel_function(
-            gamma=gamma,
+        self.kernel = get_kernel_function(
+            kernel=kernel, degree=degree, gamma=gamma, coef=coef
         )
-
-        if X.ndim == 1 and Z.ndim == 1:
-            return kernel(X, Z)
-        elif X.ndim == 1:
-            K = np.zeros(len(Z))
-            for i in range(len(Z)):
-                K[i] = kernel(X, Z[i])
-            return K
-        elif Z.ndim == 1:
-            K = np.zeros(len(X))
-            for i in range(len(X)):
-                K[i] = kernel(X[i], Z)
-            return K
-        else:
-            K = np.zeros((X.shape[0], Z.shape[0]))
-            for i in range(X.shape[0]):
-                for j in range(Z.shape[0]):
-                    K[i][j] = kernel(X[i], Z[j])
-            return K
-
-    def rbf_kernel(self, gamma=1.0):
-        return partial(self.rbf_cal, gamma=gamma)
+        self.C = C
 
     def fit(self, X, y):
         """
@@ -126,14 +93,9 @@ class SVM_cvxopt:
         X_kernel = self.kernel(X, X)
         V = X * y
 
-        print("Shape of things")
-        print(np.outer(y, y).shape)
-        print(X_kernel.shape)
-
         V_kernel = np.outer(y, y) * X_kernel
         # V_kernel = self.kernel(V, V)
         K = matrix(V_kernel)
-        print("V", V.shape)
         p = matrix(-np.ones((N, 1)))  # all-one vector
         # Build A, b, G, h
         G = matrix(np.vstack((-np.eye(N), np.eye(N))))  # for all lambda_n >= 0
@@ -173,7 +135,6 @@ class SVM_cvxopt:
         a = lamda_matrix_ravel[sv]
         sv_y = y[0, sv]
 
-        print("Shape X_kernel", X_kernel.shape)
         for n in range(len(a)):
             self.b += sv_y[n]
             self.b -= np.sum(a * sv_y * X_kernel[ind[n], sv])
@@ -211,8 +172,8 @@ class SVM_cvxopt:
         return np.squeeze(np.sign(self.decision_function(features)))
 
     def decision_function(self, features):
-        print("Decision")
-        print(self.support_vectors_.shape, features.shape)
+        # print("Decision")
+        # print(self.support_vectors_.shape, features.shape)
         A = np.dot(
             self.lamda_support_vectors.T * self.support_vectors_label,
             self.kernel(self.support_vectors_.T, features.T),
