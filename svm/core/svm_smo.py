@@ -48,9 +48,10 @@ class SVM_SMO:
         if self.kernel_str == "linear":
             self.kernel = linear_kernel
         elif self.kernel_str == "rbf":
-            self.kernel = rbf_kernel
+            self.kernel = lambda x, z: rbf_kernel(x, z.T)
 
         self.K = self.kernel(X, X.T)
+        self.e_cache = np.full((self.m), np.inf)
 
     def project(self, Xtrain, Ytrain, Xtest):
         return (
@@ -90,42 +91,36 @@ class SVM_SMO:
     def examine_example(self, i2):
         y2 = self.y[i2]
         alpha2 = self.alphas[i2]
-        E2 = self.decision_function(np.asarray([self.X[i2]])) - y2
+        if self.e_cache[i2] != np.inf:
+            E2 = self.e_cache[i2]
+        else:
+            E2 = self.decision_function(np.asarray([self.X[i2]])) - y2
         r2 = E2 * y2
         if ((r2 < -self.tol) and (alpha2 < self.C)) or (
             (r2 > self.tol) and (alpha2 > 0)
         ):
-            max_delta_E = 0
-            i1 = -1
-            # H1: find max difference
-            # TODO: optimize these code by using numpy
-            for i in range(self.m):
-                if self.alphas[i] > 0 and self.alphas[i] < self.C:
-                    if i == i2:
-                        continue
-                    E1 = (
-                        self.decision_function(np.asarray([self.X[i1]]))
-                        - self.y[i1]
-                    )
-                    delta_E = abs(E1 - E2)
-                    if delta_E > max_delta_E:
-                        max_delta_E = delta_E
-                        i1 = i
-            if i1 > -1:
+            if (
+                len(self.alphas[(self.alphas != 0) & (self.alphas != self.C)])
+                > 1
+            ):
+                if self.e_cache[i2] > 0:
+                    i1 = np.argmin(self.e_cache)
+                else:
+                    i1 = np.argmax(self.e_cache)
                 if self.take_step(i1, i2):
                     return 1
             # H2: find suitable i1 inside the boundaries
             random_index = np.random.permutation(self.m)
-            for i in random_index:
-                if self.alphas[i] > 0 and self.alphas[i] < self.C:
-                    if i == i2:
+            for i1 in random_index:
+                if self.alphas[i1] > 0 and self.alphas[i1] < self.C:
+                    if i1 == i2:
                         continue
                     if self.take_step(i1, i2):
                         return 1
             # H3: find suitable i1 on all alphas
             random_index = np.random.permutation(self.m)
-            for i in random_index:
-                if i == i2:
+            for i1 in random_index:
+                if i1 == i2:
                     continue
                 if self.take_step(i1, i2):
                     return 1
@@ -134,10 +129,18 @@ class SVM_SMO:
     def take_step(self, i1, i2):
         alpha1 = self.alphas[i1]
         y1 = self.y[i1]
-        E1 = self.decision_function(np.asarray([self.X[i1]])) - y1
+        if self.e_cache[i1] != np.inf:
+            E1 = self.e_cache[i1]
+        else:
+            E1 = self.decision_function(np.asarray([self.X[i1]])) - y1
+        # E1 = self.decision_function(self.X[i1, :]) - y1
         alpha2 = self.alphas[i2]
         y2 = self.y[i2]
-        E2 = self.decision_function(np.asarray([self.X[i2]])) - y2
+        if self.e_cache[i2] != np.inf:
+            E2 = self.e_cache[i2]
+        else:
+            E2 = self.decision_function(np.asarray([self.X[i2]])) - y2
+        # E2 = self.decision_function(self.X[i2, :]) - y2
 
         s = y1 * y2
         if y1 == y2:
@@ -154,37 +157,25 @@ class SVM_SMO:
             a2 = alpha2 - y2 * (E1 - E2) / eta
             a2 = np.clip(a2, L, H)
         else:
-            print("eta > 0.")
-            c1 = eta / 2.0
-            c2 = y2 * (E1 - E2) - eta * alpha2
-            Lobj = c1 * L * L + c2 * L
-            Hobj = c1 * H * H + c2 * L
-            if Lobj > Hobj + self.eps:
+            # print("eta > 0.")
+            # c1 = eta / 2.0
+            # c2 = y2 * (E1 - E2) - eta * alpha2
+            # Lobj = c1 * L * L + c2 * L
+            # Hobj = c1 * H * H + c2 * L
+            alphas_adj = self.alphas.copy()
+            alphas_adj[i2] = L
+            # objective function output with a2 = L
+            Lobj = self.objective(alphas_adj, self.X, self.y)
+            alphas_adj[i2] = H
+            # objective function output with a2 = H
+            Hobj = self.objective(alphas_adj, self.X, self.y)
+
+            if Lobj > (Hobj + self.eps):
                 a2 = L
-            elif Lobj < Hobj - self.eps:
+            elif Lobj < (Hobj - self.eps):
                 a2 = H
             else:
                 a2 = alpha2
-            # alphas_adj = self.alphas.copy()
-            # alphas_adj[i2] = L
-            # # objective function output with a2 = L
-            # Lobj = self.objective(alphas_adj, self.X, self.y)
-            # alphas_adj[i2] = H
-            # # objective function output with a2 = H
-            # Hobj = self.objective(alphas_adj, self.X, self.y)
-
-            # if Lobj > (Hobj + self.eps):
-            #     a2 = L
-            # elif Lobj < (Hobj - self.eps):
-            #     a2 = H
-            # else:
-            #     a2 = alpha2
-
-        # Clip to boundaries if close to it.
-        # if a2 < 1e-8:
-        #     a2 = 0.0
-        # elif a2 > (self.C - 1e-8):
-        #     a2 = self.C
 
         if np.abs(a2 - alpha2) < self.eps * (a2 + alpha2 + self.eps):
             return 0
@@ -215,6 +206,12 @@ class SVM_SMO:
         self.alphas[i2] = a2
 
         self.b = bnew
+        for i in range(self.m):
+            if (self.alphas[i] > 0) and (self.alphas[i] < self.C):
+                self.e_cache[i] = (
+                    self.decision_function(np.asarray([self.X[i]])) - self.y[i]
+                )
+
         return 1
 
     def decision_function(self, X):
@@ -247,5 +244,5 @@ class SVM_SMO:
     def objective(self, alpha, X, Y):
         """Returns the SVM objective function based in the input model defined by:"""
         return np.sum(alpha) - 0.5 * np.sum(
-            np.outer(Y, Y) * self.kernel(X, X.T) * np.outer(alpha, alpha)
+            np.outer(Y, Y) * self.kernel(X, X) * np.outer(alpha, alpha)
         )
