@@ -1,14 +1,15 @@
 import numpy as np
+from sklearn.metrics.pairwise import rbf_kernel
 
 from svm.core.kernels import get_kernel_function
 
 
-def calc_gamma_value(self, x, gamma="scale"):
-    if isinstance(x, np.ndarray):
-        if x.ndim == 1:
-            n_features = 1
-        else:
-            _, n_features = x.ndim
+def calc_gamma_value(x, gamma="scale"):
+    print(x)
+    if x.ndim == 1:
+        n_features = 1
+    else:
+        _, n_features = x.shape
 
     if gamma == "scale":
         return 1 / (n_features * np.var(x))
@@ -46,6 +47,9 @@ class SVM_SMO:
         )
         if self.kernel_str == "linear":
             self.kernel = linear_kernel
+        elif self.kernel_str == "rbf":
+            self.kernel = rbf_kernel
+
         self.K = self.kernel(X, X.T)
 
     def project(self, Xtrain, Ytrain, Xtest):
@@ -221,7 +225,6 @@ class SVM_SMO:
                 - self.b
             )
         else:
-            print(self.kernel)
             return (
                 np.dot(
                     self.support_vectors_alphas_ * self.support_vectors_ys_,

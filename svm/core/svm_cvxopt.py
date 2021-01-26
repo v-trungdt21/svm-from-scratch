@@ -3,50 +3,8 @@ from functools import partial
 import matplotlib.pyplot as plt
 import numpy as np
 from cvxopt import matrix, solvers
-from sklearn.metrics.pairwise import (
-    linear_kernel,
-    polynomial_kernel,
-    rbf_kernel,
-    sigmoid_kernel,
-)
 
 from svm.core.kernels import cal_rbf, get_kernel_function
-
-
-def get_kernel_function_new(kernel="rbf", degree=2.0, gamma=1.0, coef=0.0):
-    """Calculate the sigmoid value btw two vectors.
-    Args
-    ----------
-        x, z: input arrays
-        degree: (int, default=3). Value in poly kernel
-        gamma: ('scale', 'auto') or float. Value in poly, sigmoid, rbf kernels
-        coef: (float, default=0.0). Value in poly, sigmoid kernels
-
-    Return
-    ----------
-        cal_kernel_(x, z)
-    """
-
-    degree = float(degree)
-    kernel = kernel.lower().strip()
-
-    default_kernels = ["linear", "poly", "rbf", "sigmoid"]
-
-    if kernel not in default_kernels:
-        raise BaseException(
-            "SVM currently support ['linear'1, 'poly', \
-            'rbf','sigmoid'] kernels, please choose again!"
-        )
-    elif kernel == "linear":
-        return partial(linear_kernel)
-    elif kernel == "poly":
-        return partial(
-            polynomial_kernel, coef0=coef, gamma=gamma, degree=degree
-        )
-    elif kernel == "rbf":
-        return partial(rbf_kernel, gamma=gamma)
-    elif kernel == "sigmoid":
-        return partial(sigmoid_kernel, gamma=gamma, coef0=coef)
 
 
 class SVM_cvxopt:

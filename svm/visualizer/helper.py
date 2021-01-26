@@ -25,7 +25,12 @@ class Param:
 
         self.kernel_list = ["linear", "poly", "rbf", "sigmoid"]
         self.kernel_idx = 0
-        self.model_list = ["sklearn", "cvxopt", "svm_backup", "smo"]
+        self.model_list = [
+            "sklearn",
+            "cvxopt",
+            "smo",
+            "svm_backup",
+        ]
         self.model_idx = 0
         self.model_dict = {
             "sklearn": SVC,
