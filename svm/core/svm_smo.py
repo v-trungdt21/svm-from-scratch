@@ -46,7 +46,6 @@ class SVM_SMO:
         )
         if self.kernel_str == "linear":
             self.kernel = linear_kernel
-        # self.e_cache = self.project(X, y, X) - y
         self.K = self.kernel(X, X.T)
 
     def project(self, Xtrain, Ytrain, Xtest):
@@ -148,7 +147,6 @@ class SVM_SMO:
         if eta < 0:
             a2 = alpha2 - y2 * (E1 - E2) / eta
             a2 = np.clip(a2, L, H)
-        # eta's never >0 (at least for our current dataset)
         else:
             print("eta > 0.")
             c1 = eta / 2.0
@@ -176,7 +174,7 @@ class SVM_SMO:
             # else:
             #     a2 = alpha2
 
-        # Push a2 to 0 or C if very close
+        # Clip to boundaries if close to it.
         if a2 < 1e-8:
             a2 = 0.0
         elif a2 > (self.C - 1e-8):
@@ -210,20 +208,6 @@ class SVM_SMO:
         self.alphas[i1] = a1
         self.alphas[i2] = a2
 
-        # huhu
-        # for index, alph in zip([i1, i2], [a1, a2]):
-        #     if 0.0 < alph < self.C:
-        #         self.e_cache[index] = 0.0
-
-        # # Set non-optimized errors based on equation 12.11 in Platt's book
-        # non_opt = [n for n in range(self.m) if (n != i1 and n != i2)]
-        # self.e_cache[non_opt] = (
-        #     self.e_cache[non_opt]
-        #     + y1 * (a1 - alpha1) * self.K[i1, non_opt]
-        #     + y2 * (a2 - alpha2) * self.K[i2, non_opt]
-        #     + self.b
-        #     - bnew
-        # )
         self.b = bnew
         return 1
 
