@@ -84,6 +84,8 @@ class SVM_SMO:
                 examine_all = True
 
         self.set_support_vectors()
+        self.X = None
+        self.y = None
 
     def examine_example(self, i2):
         y2 = self.y[i2]
@@ -179,10 +181,10 @@ class SVM_SMO:
             #     a2 = alpha2
 
         # Clip to boundaries if close to it.
-        if a2 < 1e-8:
-            a2 = 0.0
-        elif a2 > (self.C - 1e-8):
-            a2 = self.C
+        # if a2 < 1e-8:
+        #     a2 = 0.0
+        # elif a2 > (self.C - 1e-8):
+        #     a2 = self.C
 
         if np.abs(a2 - alpha2) < self.eps * (a2 + alpha2 + self.eps):
             return 0
@@ -236,7 +238,7 @@ class SVM_SMO:
     def predict(self, X):
         return np.sign(self.decision_function(X))
 
-    def set_support_vectors(self, support_threshold=1e-1):
+    def set_support_vectors(self, support_threshold=1e-5):
         mask = self.alphas > support_threshold
         self.support_vectors_alphas_ = self.alphas[mask]
         self.support_vectors_ = self.X[mask]

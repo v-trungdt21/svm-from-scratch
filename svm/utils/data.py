@@ -39,6 +39,15 @@ def generate_nonlinear_separable_dataset_2():
     return X, Y
 
 
+def generate_linear_separable_dataset_overlap():
+    path = os.path.dirname(svm.__file__)
+    data_path = os.path.join(path, "assets/data")
+    X = np.load(data_path + "/X_linear_separable_overlap.npy")
+    Y = np.load(data_path + "/Y_linear_separable_overlap.npy")
+
+    return X, Y
+
+
 def generate_nonlinear_separable_dataset(
     n_samples=200, n_features=2, n_classes=2, mean=[0.0, 0.0], seed=50
 ):

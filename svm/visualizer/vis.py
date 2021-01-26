@@ -7,6 +7,7 @@ import numpy as np
 
 from svm.utils import (
     generate_linear_separable_dataset,
+    generate_linear_separable_dataset_overlap,
     generate_nonlinear_separable_dataset,
     generate_nonlinear_separable_dataset_2,
 )
@@ -33,6 +34,7 @@ key_dict = {
     "2": "create_linear_separable",
     "3": "create_nonlinear_separable_1",
     "4": "create_nonlinear_separable_2",
+    "5": "create_linear_separable_overlap",
     " ": "infer",
     "f2": "toggle_kernels",
     "f3": "toggle_models",
@@ -111,6 +113,15 @@ def onpress(event, fig, ax, X, Y, plot_param: Param):
             Y,
             plot_param,
             generate_nonlinear_separable_dataset_2,
+        )
+    elif pressed_key == "create_linear_separable_overlap":
+        generate_data_then_plot(
+            fig,
+            ax,
+            X,
+            Y,
+            plot_param,
+            generate_linear_separable_dataset_overlap,
         )
     elif pressed_key == "infer":
         if not X or not Y:
