@@ -18,10 +18,6 @@ def calc_gamma_value(x, gamma="scale"):
         return float(gamma)
 
 
-def linear_kernel(x, z):
-    return np.dot(x, z)
-
-
 class SVM_SMO:
     def __init__(self, kernel, C, gamma, coef0, tol, degree, **param):
         self.C = C
@@ -41,13 +37,13 @@ class SVM_SMO:
         self.m, self.n = X.shape[0], X.shape[1]
         self.alphas = np.zeros(self.m)
         self.b = 0
-        self.kernel = get_kernel_function(
+        kernel = get_kernel_function(
             self.kernel_str, self.degree, self.gamma, self.coef
         )
-        if self.kernel_str == "linear":
-            self.kernel = linear_kernel
-        elif self.kernel_str == "rbf":
+        if self.kernel_str == "rbf":
             self.kernel = lambda x, z: rbf_kernel(x, z.T)
+        else:
+            self.kernel = lambda x, z: kernel(x.T, z)
 
         self.K = self.kernel(X, X.T)
         self.e_cache = np.full((self.m), np.inf)
@@ -241,7 +237,6 @@ class SVM_SMO:
         self.support_vectors_ys_ = self.y[mask]
 
     def objective(self, alpha, X, Y):
-        """Returns the SVM objective function based in the input model defined by:"""
         return np.sum(alpha) - 0.5 * np.sum(
             np.outer(Y, Y) * self.kernel(X, X) * np.outer(alpha, alpha)
         )
