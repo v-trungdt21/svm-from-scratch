@@ -56,16 +56,10 @@ class SVM_cvxopt:
         self.w = None
         self.b = None
         self.support_vectors_ = None
-        if kernel == "rbf":
-            self.kernel = self.rbf_kernel()
-        else:
-            self.kernel = get_kernel_function(
-                kernel=kernel, degree=degree, gamma=gamma, coef=coef
-            )
+        self.kernel = get_kernel_function(
+            kernel=kernel, degree=degree, gamma=gamma, coef=coef
+        )
         self.C = C
-
-    def rbf_kernel(self, gamma=1.0):
-        return partial(cal_rbf, gamma=gamma)
 
     def fit(self, X, y):
         """
