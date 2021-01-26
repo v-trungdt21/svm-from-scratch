@@ -5,7 +5,6 @@ from svm.core.kernels import get_kernel_function
 
 
 def calc_gamma_value(x, gamma="scale"):
-    print(x)
     if x.ndim == 1:
         n_features = 1
     else:
@@ -157,7 +156,7 @@ class SVM_SMO:
             a2 = alpha2 - y2 * (E1 - E2) / eta
             a2 = np.clip(a2, L, H)
         else:
-            # print("eta > 0.")
+            print("eta > 0.")
             # c1 = eta / 2.0
             # c2 = y2 * (E1 - E2) - eta * alpha2
             # Lobj = c1 * L * L + c2 * L
