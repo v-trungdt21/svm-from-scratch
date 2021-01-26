@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import (
     sigmoid_kernel,
 )
 
-from svm.core.kernels import get_kernel_function
+from svm.core.kernels import cal_rbf, get_kernel_function
 
 
 def get_kernel_function_new(kernel="rbf", degree=2.0, gamma=1.0, coef=0.0):
@@ -92,7 +92,7 @@ class SVM_cvxopt:
             return K
 
     def rbf_kernel(self, gamma=1.0):
-        return partial(self.rbf_cal, gamma=gamma)
+        return partial(cal_rbf, gamma=gamma)
 
     def fit(self, X, y):
         """

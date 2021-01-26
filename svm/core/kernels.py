@@ -52,6 +52,39 @@ def rbf_kernel(x, z, gamma):
     return np.exp(-1.0 * gamma * np.linalg.norm(x - z) ** 2)
 
 
+def cal_rbf(x, z, gamma):
+    """Calculate the rbf product btw two vectors.
+    Args
+    ----------
+        x, z: input arrays
+
+    Return
+    ----------
+        rbf(x, z)
+    """
+    x = x.T
+    z = z.T
+
+    if x.ndim == 1 and z.ndim == 1:
+        return rbf_kernel(x, z, gamma)
+    elif x.ndim == 1:
+        K = np.zeros(len(z))
+        for i in range(len(z)):
+            K[i] = rbf_kernel(x, z[i], gamma)
+        return K
+    elif z.ndim == 1:
+        K = np.zeros(len(x))
+        for i in range(len(x)):
+            K[i] = rbf_kernel(x[i], z, gamma)
+        return K
+    else:
+        K = np.zeros((x.shape[0], z.shape[0]))
+        for i in range(x.shape[0]):
+            for j in range(z.shape[0]):
+                K[i][j] = rbf_kernel(x[i], z[j], gamma)
+        return K
+
+
 def sigmoid_kernel(x, z, gamma, coef):
     """Calculate the sigmoid value btw two vectors.
 
