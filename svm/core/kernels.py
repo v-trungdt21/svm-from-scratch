@@ -131,6 +131,6 @@ def get_kernel_function(kernel="rbf", degree=3.0, gamma=1.0, coef=0.0):
             polynomial_kernel, coef=coef, gamma=gamma, degree=degree
         )
     elif kernel == "rbf":
-        return partial(rbf_kernel, gamma=gamma)
+        return partial(cal_rbf, gamma=gamma)
     elif kernel == "sigmoid":
         return partial(sigmoid_kernel, gamma=gamma, coef=coef)
