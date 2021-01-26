@@ -56,15 +56,43 @@ class SVM_cvxopt:
         self.w = None
         self.b = None
         self.support_vectors_ = None
-        if kernel == "linear":
-            self.kernel = get_kernel_function(
-                kernel=kernel, degree=degree, gamma=gamma, coef=coef
-            )
+        if kernel == "rbf":
+            self.kernel = self.rbf_kernel(gamma=gamma)
         else:
             self.kernel = get_kernel_function(
                 kernel=kernel, degree=degree, gamma=gamma, coef=coef
             )
         self.C = C
+
+    def rbf_cal(self, X, Z, gamma):
+        X = X.T
+        Z = Z.T
+
+        kernel = get_kernel_function(
+            gamma=gamma,
+        )
+
+        if X.ndim == 1 and Z.ndim == 1:
+            return kernel(X, Z)
+        elif X.ndim == 1:
+            K = np.zeros(len(Z))
+            for i in range(len(Z)):
+                K[i] = kernel(X, Z[i])
+            return K
+        elif Z.ndim == 1:
+            K = np.zeros(len(X))
+            for i in range(len(X)):
+                K[i] = kernel(X[i], Z)
+            return K
+        else:
+            K = np.zeros((X.shape[0], Z.shape[0]))
+            for i in range(X.shape[0]):
+                for j in range(Z.shape[0]):
+                    K[i][j] = kernel(X[i], Z[j])
+            return K
+
+    def rbf_kernel(self, gamma=1.0):
+        return partial(self.rbf_cal, gamma=gamma)
 
     def fit(self, X, y):
         """
@@ -145,6 +173,7 @@ class SVM_cvxopt:
         a = lamda_matrix_ravel[sv]
         sv_y = y[0, sv]
 
+        print("Shape X_kernel", X_kernel.shape)
         for n in range(len(a)):
             self.b += sv_y[n]
             self.b -= np.sum(a * sv_y * X_kernel[ind[n], sv])
