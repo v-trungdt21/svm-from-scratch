@@ -4,11 +4,11 @@ Build SVM from scratch using only Python and some helper libraries: pandas, nump
 
 There are 5 tasks in total:
 
-- **Task 1**: Inference ([progress](docs/task1.md)).
-- **Task 2**: Kernelize SVM ([progress](docs/task2.md)).
-- **Task 3**: Training using convex optimization library ([progress](docs/task3.md)).
-- **Task 4**: Training using self-implementeed library ([progress](docs/task4.md)).
-- **Task 5**: Visualization + Comparison with sklearn ([progress](docs/task5.md)).
+- **Task 1**: Inference.
+- **Task 2**: Kernelize SVM.
+- **Task 3**: Training using convex optimization library.
+- **Task 4**: Training using self-implementeed library.
+- **Task 5**: Visualization + Comparison with sklearn.
 
 # Installation guide 🔥
 
@@ -42,6 +42,34 @@ $ pre-commit install
 - Remember to put understandable commit descriptions.
 - Update `taskX.md` of your task (documentation, progress, API documentation) usually so that other can follow it.
 - Write tests if you can.
+
+# API
+
+## Install
+
+```
+  # Install the package
+  pip install -e .
+```
+
+## Usage
+
+```
+from svm import SVM_SMO, SVM_cvxopt
+
+# We support 4 kernels: linear, sigmoid, poly, rbf.
+model = SVM_SMO(C=100, kernel="linear", degree=3.0, gamma=1.0, coef=0.0)
+or
+model = SVM_cvxopt(C=100, kernel="linear", degree=3.0, gamma=1.0, coef=0.0)
+
+model.fit(X,Y)
+model.predict(Xtest)
+
+```
+
+# Result
+
+![SVM_Comparision](assets/comparision.png)
 
 # Contributors 🥺
 
